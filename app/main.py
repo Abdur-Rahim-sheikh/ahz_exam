@@ -15,4 +15,4 @@ async def lifespan(_app: FastAPI):
 
 app = FastAPI(title="AHZ database", lifespan=lifespan)
 
-app.include_router(dbRouter, prefix="api/query")
+app.include_router(dbRouter, prefix="/api/query")
