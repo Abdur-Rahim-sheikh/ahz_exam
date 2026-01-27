@@ -11,3 +11,20 @@ Though what I did tried to make following the best practices.
 
 Regrads,
 Abdur Rahim
+
+## The api docs
+
+The api doc will be found in fastapi documentation
+after starting the project via
+
+```bash
+uv run fastapi dev
+```
+
+open
+
+```bash
+localhost:8000/docs
+```
+
+And all is there.
