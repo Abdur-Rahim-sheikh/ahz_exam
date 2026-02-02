@@ -4,17 +4,9 @@ from sqlmodel import (
     TIMESTAMP,
     Column,
     Field,
-    Relationship,
     SQLModel,
-    create_engine,
     text,
 )
-
-sqlite_file_name = "database.db"
-sqlite_url = f"sqlite:///{sqlite_file_name}"
-
-connect_args = {"check_same_thread": False}
-engine = create_engine(sqlite_url, connect_args=connect_args)
 
 
 class Author(SQLModel, table=True):
@@ -38,7 +30,3 @@ class Book(SQLModel, table=True):
     )
     genre: str
     is_archived: bool = False
-
-
-def create_db_and_tables():
-    SQLModel.metadata.create_all(engine)
