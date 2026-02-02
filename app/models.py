@@ -11,7 +11,7 @@ from sqlmodel import (
 
 class Author(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    name: str
+    name: str = Field(index=True)
     date_of_birth: date
     # books: list["Book"] = Relationship(back_populates="author")
 

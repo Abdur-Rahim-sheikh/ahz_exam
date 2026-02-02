@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session, select
+from sqlmodel import Session, select, or_
 from ..core.database import session_scope
 from ..dependencies.db_depends import get_session
 from ..models import Author, Book
@@ -9,6 +9,10 @@ from ..schemas.author_schema import AuthorCreate
 from ..schemas.book_schema import BookCreate
 from contextlib import asynccontextmanager
 from datetime import date
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 
 def create_authors():
@@ -18,6 +22,11 @@ def create_authors():
     with session_scope() as session:
         session.add_all([author_1, author_2, author_3])
         session.commit()
+
+        logger.debug(msg=f"{author_1=}, {author_2=}, {author_3=}")
+        logger.debug(msg=f"{author_1=}, {author_2.name=}, {author_3=}")
+
+        logger.debug(msg=f"{author_1=}, {author_2=}, {author_3=}")
 
 
 @asynccontextmanager
@@ -38,6 +47,13 @@ def create_author(
     session.commit()
     session.refresh(author)
     return author
+
+
+@router.get("/get-authors")
+def get_authors(session: Session = Depends(get_session)):
+    statement = select(Author.name).where(or_(1, Author.id % 2 == 1))
+    authors = session.exec(statement=statement).all()
+    return authors
 
 
 @router.post("/create-book")

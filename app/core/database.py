@@ -15,6 +15,10 @@ def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
 
 
+def clean_db():
+    SQLModel.metadata.drop_all(engine)
+
+
 @contextmanager
 def session_scope():
     with Session(engine) as session:
