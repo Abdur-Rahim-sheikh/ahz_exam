@@ -51,9 +51,15 @@ def create_author(
 
 @router.get("/get-authors")
 def get_authors(session: Session = Depends(get_session)):
-    statement = select(Author.name).where(or_(1, Author.id % 2 == 1))
-    authors = session.exec(statement=statement).all()
+    statement = select(Author.name).where(or_(Author.id == 1, Author.id % 2 == 0))
+    authors = session.exec(statement=statement).one()
     return authors
+
+
+@router.get("/get-author/{id}")
+def get_author_by_id(id: int, session: Session = Depends(get_session)):
+    author = session.get(Author, id)
+    return author
 
 
 @router.post("/create-book")
@@ -74,7 +80,7 @@ def create_book(request: BookCreate, session: Annotated[Session, Depends(get_ses
 def get_books(author_name: str, session: Annotated[Session, Depends(get_session)]):
     try:
         results = session.exec(select(Author).where(Author.name == author_name))
-        author = results.one()
+        author = results.first()
     except Exception as e:
         raise HTTPException("author not found") from e
 
