@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from datetime import date, timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends
 from sqlmodel import Session, select, update
 
 from ..core.database import session_scope
@@ -92,24 +92,15 @@ def get_author_by_id(id: int, session: Session = Depends(get_session)):
 
 @router.get("/author/books/{author_name}", tags=["Author"])
 def get_books(author_name: str, session: Annotated[Session, Depends(get_session)]):
-    try:
-        results = session.exec(select(Author).where(Author.name == author_name))
-        author = results.first()
-    except Exception as e:
-        raise HTTPException("author not found") from e
-
-    results = session.exec(select(Book).where(Book.author_id == author.id))
-    books = results.all()
-    return books
+    results = session.exec(
+        select(Book).where(Author.name == author_name, Author.id == Book.author_id)
+    )
+    book = results.all()
+    return book
 
 
 @router.post("/book/create", tags=["Book"])
 def create_book(request: BookCreate, session: Annotated[Session, Depends(get_session)]):
-    # try:
-    #     results = session.exec(select(Author).where(Author.id == request.author_id))
-    #     author = results.one()
-    # except Exception as e:
-    #     raise HTTPException(status_code=422, detail="author not found") from e
     book = Book.model_validate(request)
     session.add(book)
     session.commit()
@@ -128,3 +119,18 @@ def update_book_title(
 
     session.commit()
     return "OK"
+
+
+@router.get("/book/author-books", tags=["Book"])
+def get_author_books(author_id: int, session: Annotated[Session, Depends(get_session)]):
+    # statement = select(Author, Book).where(
+    #     Author.id == Book.author_id, Author.id == author_id
+    # )
+    # first one with where clause, second one is with join clause
+    statement = (
+        select(Author.name, Book.title)
+        .join(Book, isouter=True)
+        .where(Author.id == author_id)
+    )
+    results = session.exec(statement=statement).all()
+    return [{"author": author, "book": book} for author, book in results]
